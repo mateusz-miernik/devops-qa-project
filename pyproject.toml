@@ -4,4 +4,9 @@ version = "0.1.0"
 description = "DevOps QA project"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["fastapi[standard]"]
+dependencies = [
+    "fastapi[standard]"
+]
+
+[project.scripts]
+main = "main:app"
