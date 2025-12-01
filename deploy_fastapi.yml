@@ -1,0 +1,90 @@
+---
+- name: Deploy FastAPI server
+  hosts: fastapi_servers
+  become: yes
+
+  vars:
+    app_user: fastapi
+    app_dir: /opt/fastapi_app
+    venv_dir: /opt/fastapi_app/venv
+    service_name: fastapi
+    app_entrypoint: main:app
+
+  tasks:
+
+    - name: Install required system packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure system packages are installed (CentOS/RHEL)
+      yum:
+        name:
+          - python3
+          - python3-pip
+          - git
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        create_home: no
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    - name: Copy FastAPI source files
+      copy:
+        src: ./app/
+        dest: "{{ app_dir }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+
+    - name: Create virtual environment
+      command: python3 -m venv "{{ venv_dir }}"
+      args:
+        creates: "{{ venv_dir }}/bin/activate"
+
+    - name: Install FastAPI & Uvicorn in virtualenv
+      command: "{{ venv_dir }}/bin/pip install fastapi uvicorn[standard]"
+      environment:
+        PIP_BREAK_SYSTEM_PACKAGES: "0"
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/{{ service_name }}.service
+        content: |
+          [Unit]
+          Description=FastAPI application
+          After=network.target
+
+          [Service]
+          User={{ app_user }}
+          WorkingDirectory={{ app_dir }}
+          ExecStart={{ venv_dir }}/bin/uvicorn {{ app_entrypoint }} --host 0.0.0.0 --port 8000
+          Restart=always
+          
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start the service
+      systemd:
+        name: "{{ service_name }}"
+        state: started
+        enabled: yes
