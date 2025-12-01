@@ -208,3 +208,6 @@ __marimo__/
 
 # uv lock file
 uv.lock
+
+# Ignore PyCharm .idea project folder
+.idea
