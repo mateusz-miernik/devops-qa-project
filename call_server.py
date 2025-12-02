@@ -3,10 +3,32 @@
     - call /hello endpoint
 """
 
+import socket
+import os
 import argparse
 import requests
 import paramiko
 
+
+def get_host_ip():
+    """
+    Detect host IP from inside Docker (works on WSL2/Linux/Docker Desktop)
+    """
+
+    host_env = os.getenv("FASTAPI_HOST")
+    if host_env:
+        return host_env
+
+    if os.getenv("HOST_DOCKER_INTERNAL") or os.name == "nt":
+        return "host.docker.internal"
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # connect to a public IP (no packets sent), get container's outgoing interface
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    finally:
+        s.close()
 
 def fetch_hello(api_url: str, output_file: str):
     """Fetch /hello and save locally."""
@@ -51,21 +73,26 @@ if __name__ == "__main__":
         choices=["hello", "random"],
         help="Which mode to run"
     )
-    parser.add_argument("--api-url", required=True, help="Base URL for FastAPI server, e.g. http://localhost:8000")
+    parser.add_argument("--api-url", default=None, help="Base URL for FastAPI server, e.g. http://localhost:8000")
 
     # Options for 'hello' mode
     parser.add_argument("--output-file", default="hello.txt", help="Local file to save /hello response")
 
     # Options for 'random' mode
     parser.add_argument("--hostname", help="SSH host")
+    parser.add_argument("--port", default="8000", help="Port")
     parser.add_argument("--username", help="SSH username")
     parser.add_argument("--password", help="SSH password")
     parser.add_argument("--remote-filename", help="Remote filename without extension")
 
     args = parser.parse_args()
+    
+    if args.api_url is None:
+        host_ip = get_host_ip()
+        args.api_url = f"http://{host_ip}"
 
     if args.mode == "hello":
-        fetch_hello(args.api_url, args.output_file)
+        fetch_hello(f"{args.api_url}:{args.port}", args.output_file)
 
     elif args.mode == "random":
         if not all([args.hostname, args.username, args.password, args.remote_filename]):
