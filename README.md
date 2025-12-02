@@ -20,9 +20,9 @@ Project related to devops activities - creating simple server, preparing IaC fil
 * Build image:
 ```docker build -t task-runner .```
 * Mode: hello
-```docker run --rm task-runner hello --api-url http://<IP_address>:8000 --output-file hello.txt```
+```docker run --rm task-runner hello --api-url http://http://host.docker.internal --output-file hello.txt```
 * Mode: random
-```docker run --rm task-runner random --api-url http://<IP_address:8000 --hostname <remote_IP> --username <username> --password <password> --remote-filename random_phrase```
+```docker run --rm task-runner random --api-url http://http://host.docker.internal --hostname <remote_IP> --username <username> --password <password> --remote-filename random_phrase```
 
 4. Run with Make:
 ```make build```
