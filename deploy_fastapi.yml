@@ -47,7 +47,7 @@
     - name: Copy FastAPI source files
       copy:
         src: ./app/
-        dest: "{{ app_dir }}"
+        dest: "{{ app_dir }}/app"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
         mode: 0755
