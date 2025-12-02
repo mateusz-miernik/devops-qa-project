@@ -8,7 +8,7 @@
     app_dir: /opt/fastapi_app
     venv_dir: /opt/fastapi_app/venv
     service_name: fastapi
-    app_entrypoint: main:app
+    app_entrypoint: app.main:app
 
   tasks:
 
@@ -41,8 +41,8 @@
       file:
         path: "{{ app_dir }}"
         state: directory
-        owner: "{{ app_user }}"
-        group: "{{ app_user }}"
+        owner: root
+        group: root
 
     - name: Copy FastAPI source files
       copy:
@@ -50,7 +50,7 @@
         dest: "{{ app_dir }}"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
-        mode: "0755"
+        mode: 0755
 
     - name: Create virtual environment
       command: python3 -m venv "{{ venv_dir }}"
