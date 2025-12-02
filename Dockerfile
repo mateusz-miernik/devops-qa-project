@@ -1,10 +1,10 @@
 FROM python:3.12-slim
 
-WORKDIR /app
+# Install uv.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY pyproject.toml .
-RUN uv run call_server.py
-
-COPY call_server.py .
+COPY . .
+WORKDIR .
+RUN uv sync --frozen --no-cache
 
 ENTRYPOINT ["python", "call_server.py"]
