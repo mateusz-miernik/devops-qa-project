@@ -16,13 +16,13 @@ Project related to devops activities - creating simple server, preparing IaC fil
 2. Run fastapi server with ansible:
 `ansible-playbook -i inventory.ini deploy_fastapi.yml --ask-become-pass`
 
-3. Run fastapi server with Docker:
+3. Run python script with two operational modes (with Docker):
 * Build image:
 ```docker build -t task-runner .```
 * Mode: hello
-```docker run --rm task-runner hello --api-url http://http://host.docker.internal --output-file hello.txt```
+```docker run --rm task-runner hello --api-url http://host.docker.internal --output-file hello.txt```
 * Mode: random
-```docker run --rm task-runner random --api-url http://http://host.docker.internal --hostname <remote_IP> --username <username> --password <password> --remote-filename random_phrase```
+```docker run --rm task-runner random --api-url http://host.docker.internal --hostname <remote_IP> --username <username> --password <password> --remote-filename random_phrase```
 
 4. Run with Make:
 ```make build```
